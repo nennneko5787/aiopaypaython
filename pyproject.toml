@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=40.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aiopaypaython"
+version = "1.8.8"
+authors = [
+  { name="nennneko5787", email="h4369@nennneko5787.net" },
+]
+description = "Paypay mobile wrapper for asyncio"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Operating System :: OS Independent",
+    "Natural Language :: Japanese",
+]
+dynamic = ["dependencies"]
+
+[project.urls]
+Homepage = "https://github.com/nennneko5787/aiopaypaython"
+Issues = "https://github.com/nennneko5787/aiopaypaython/issues"
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
