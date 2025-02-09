@@ -47,39 +47,35 @@ class PayPay:
             self.device_uuid = str(uuid4()).upper()
 
         self.client_uuid = client_uuid
-        self.params = {"payPayLang": "ja"}
-        try:
-            iosstore = await self.session.get(
-                "https://apps.apple.com/jp/app/paypay-%E3%83%9A%E3%82%A4%E3%83%9A%E3%82%A4/id1435783608",
-            )
-        except Exception as e:
-            raise NetWorkError(e)
-
-        self.version = (
-            BeautifulSoup(iosstore.text, "html.parser")
-            .find(class_="l-column small-6 medium-12 whats-new__latest__version")
-            .text.split()[1]
-        )
-        self.headers = {
+        self.params= {
+            "payPayLang":"ja"
+        }
+        #try:
+        #    iosstore=requests.get("https://apps.apple.com/jp/app/paypay-%E3%83%9A%E3%82%A4%E3%83%9A%E3%82%A4/id1435783608",proxies=proxy)
+        #except Exception as e:
+        #    raise NetWorkError(e)
+        
+        self.version="4.42.0" #BeautifulSoup(iosstore.text,"html.parser").find(class_="l-column small-6 medium-12 whats-new__latest__version").text.split()[1]
+        self.headers={
             "Host": "app4.paypay.ne.jp",
-            "Accept-Charset": "UTF-8",
-            "Client-Mode": "NORMAL",
-            "Client-OS-Release-Version": "16.7.5",
-            "Client-OS-Type": "IOS",
-            "Client-OS-Version": "16.7.5",
-            "Client-Type": "PAYPAYAPP",
-            "Client-UUID": client_uuid,
-            "Client-Version": self.version,
-            "Device-Brand-Name": "apple",
-            "Device-Hardware-Name": "iPhone10,1",
-            "Device-Manufacturer-Name": "apple",
-            "Device-Name": "iPhone10,1",
-            "Device-UUID": self.device_uuid,
-            "Is-Emulator": "false",
-            "Network-Status": "WIFI",
-            "System-Locale": "ja",
-            "Timezone": "Asia/Tokyo",
-            "User-Agent": f"PaypayApp/{self.version} iOS16.7.5 Ktor",
+            "Accept-Charset" : "UTF-8",
+            "Client-Mode" : "NORMAL",
+            "Client-OS-Release-Version" : "14.8.0",
+            "Client-OS-Type" : "IOS",
+            "Client-OS-Version" : "14.8.0",
+            "Client-Type" : "PAYPAYAPP",
+            "Client-UUID" : client_uuid,
+            "Client-Version" : self.version,
+            "Device-Brand-Name" : "apple",
+            "Device-Hardware-Name" : "iPhone10,1",
+            "Device-Manufacturer-Name" : "apple",
+            "Device-Name" : "iPhone10,1",
+            "Device-UUID" : self.device_uuid,
+            "Is-Emulator" : "false",
+            "Network-Status" : "WIFI",
+            "System-Locale" : "ja",
+            "Timezone" : "Asia/Tokyo",
+            "User-Agent" : f"PaypayApp/{self.version} iOS14.8.0 Ktor",
         }
         if access_token:
             self.headers["Authorization"] = f"Bearer {access_token}"
