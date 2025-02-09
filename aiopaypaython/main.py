@@ -25,9 +25,8 @@ class PayPayNetWorkError(Exception):
 class PayPay:
     def __init__(
         self,
-        proxy: dict = None,
+        proxy: str = None,
     ):
-        self.proxy = proxy
         self.session = httpx.AsyncClient(proxy=proxy)
 
     async def initialize(
