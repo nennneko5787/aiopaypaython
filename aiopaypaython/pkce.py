@@ -10,9 +10,9 @@ Examples
 >>> code_challenge = pkce.get_code_challenge(code_verifier)
 """
 
-import secrets
-import hashlib
 import base64
+import hashlib
+import secrets
 from typing import Tuple
 
 

@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aiopaypaython"
-version = "1.8.8"
+version = "2.0.0"
 authors = [
-  { name="nennneko5787", email="h4369@nennneko5787.net" },
+    { name="nennneko5787", email="h4369@nennneko5787.net" },
 ]
 description = "Paypay mobile wrapper for asyncio"
 readme = "README.md"
