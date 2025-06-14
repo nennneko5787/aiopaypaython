@@ -1,8 +1,9 @@
 import random
-from typing import Dict, NamedTuple
+from typing import NamedTuple
 from uuid import uuid4
 
 import httpx
+
 from . import pkce
 
 
@@ -89,7 +90,7 @@ def update_header_baggage(
     if sample_rate:
         baggage = baggage + f",sentry-sample_rate={sample_rate}"
 
-    if sampled != None:
+    if sampled is not None:
         if sampled:
             baggage = baggage + ",sentry-sampled=true"
         else:
@@ -125,14 +126,8 @@ class PayPayNetWorkError(Exception):
 
 
 class PayPay:
-    def __init__(
-        self,
-        proxy: str = None,
-    ):
-        if proxy is not None:
-            if not proxy.startswith("http"):
-                proxy = "http://" + proxy
-        self.session = httpx.AsyncClient(proxy=proxy, timeout=10)
+    def __init__(self, proxy: str = None):
+        self.session = httpx.AsyncClient(timeout=None, proxy=proxy)
 
     async def initialize(
         self,
@@ -142,7 +137,6 @@ class PayPay:
         client_uuid: str = str(uuid4()),
         access_token: str = None,
     ):
-
         if phone and "-" in phone:
             phone = phone.replace("-", "")
 
@@ -154,8 +148,12 @@ class PayPay:
         self.client_uuid = client_uuid
 
         self.params = {"payPayLang": "ja"}
+        # try:
+        #    iosstore=self.session.get("https://apps.apple.com/jp/app/paypay-%E3%83%9A%E3%82%A4%E3%83%9A%E3%82%A4/id1435783608",proxies=self.proxy)
+        # except Exception as e:
+        #    raise NetWorkError(e)
 
-        self.version = "4.78.1"
+        self.version = "4.78.1"  # BeautifulSoup(iosstore.text,"html.parser").find(class_="l-column small-6 medium-12 whats-new__latest__version").text.split()[1]
         device_state = generate_device_state()
         self.headers = {
             "Accept": "*/*",
@@ -226,7 +224,7 @@ class PayPay:
             )
             try:
                 par = par.json()
-            except:
+            except Exception:
                 raise PayPayNetWorkError("日本以外からは接続できません")
 
             if par["header"]["resultCode"] != "S0000":
@@ -257,7 +255,7 @@ class PayPay:
                 "request_uri": par["payload"]["requestUri"],
             }
             await self.session.get(
-                f"https://www.paypay.ne.jp/portal/api/v2/oauth2/authorize",
+                "https://www.paypay.ne.jp/portal/api/v2/oauth2/authorize",
                 headers=headers,
                 params=params,
             )
@@ -329,7 +327,7 @@ class PayPay:
                 "X-Requested-With": "jp.ne.paypay.android.app",
             }
             payload = {"username": phone, "password": password, "signInAttemptCount": 1}
-            signin: Dict[str, str] = (
+            signin = (
                 await self.session.post(
                     "https://www.paypay.ne.jp/portal/api/v2/oauth2/sign-in/password",
                     headers=headers,
@@ -341,12 +339,12 @@ class PayPay:
 
             if device_uuid:
                 try:
-                    uri: str = (
+                    uri = (
                         signin["payload"]["redirectUrl"]
                         .replace("paypay://oauth2/callback?", "")
                         .split("&")
                     )
-                except:
+                except Exception:
                     raise PayPayLoginError("登録されていないDevice-UUID")
 
                 headers = self.headers
@@ -477,7 +475,7 @@ class PayPay:
                 "data": {"type": "COMPLETE_OTL", "payload": None},
             }
         }
-        get_uri: Dict[str, str] = (
+        get_uri = (
             await self.session.post(
                 "https://www.paypay.ne.jp/portal/api/v2/oauth2/extension/code-grant/update",
                 headers=headers,
@@ -493,7 +491,7 @@ class PayPay:
                 .replace("paypay://oauth2/callback?", "")
                 .split("&")
             )
-        except:
+        except Exception:
             raise PayPayLoginError(
                 "redirect_uriが見つかりませんでした\n" + str(get_uri)
             )
@@ -593,7 +591,7 @@ class PayPay:
 
         history = (
             await self.session.get(
-                f"https://app4.paypay.ne.jp/bff/v3/getPaymentHistory",
+                "https://app4.paypay.ne.jp/bff/v3/getPaymentHistory",
                 params=params,
                 headers=self.headers,
             )
@@ -642,7 +640,7 @@ class PayPay:
 
         try:
             money = balance["payload"]["walletDetail"]["emoneyBalanceInfo"]["balance"]
-        except:
+        except Exception:
             money = None
 
         class GetBalance(NamedTuple):
@@ -679,7 +677,7 @@ class PayPay:
                 "Content-Type": "application/json",
             }
             link_info = (
-                await self.session.get(
+                await httpx.AsyncClient().get(
                     f"https://www.paypay.ne.jp/app/v2/p2p-api/getP2PLinkInfo?verificationCode={url}",
                     headers=headers,
                 )
@@ -802,7 +800,7 @@ class PayPay:
                 "すでに 受け取り / 辞退 / キャンセル されているリンクです"
             )
 
-        if link_info["payload"]["pendingP2PInfo"]["isSetPasscode"] and passcode == None:
+        if link_info["payload"]["pendingP2PInfo"]["isSetPasscode"] and passcode is None:
             raise PayPayError("このリンクにはパスワードが設定されています")
 
         if link_info["payload"]["pendingP2PInfo"]["isSetPasscode"]:
@@ -816,7 +814,7 @@ class PayPay:
         )
         try:
             receive = receive.json()
-        except:
+        except Exception:
             raise PayPayNetWorkError("日本以外からは接続できません")
 
         if receive["header"]["resultCode"] == "S0001":
@@ -909,6 +907,7 @@ class PayPay:
                     "https://app4.paypay.ne.jp/bff/v2/getP2PLinkInfo",
                     headers=self.headers,
                     params=params,
+                    proxies=self.proxy,
                 )
             ).json()
 
@@ -976,7 +975,7 @@ class PayPay:
         )
         try:
             create = create.json()
-        except:
+        except Exception:
             raise PayPayNetWorkError("日本以外からは接続できません")
 
         if create["header"]["resultCode"] == "S0001":
@@ -1021,14 +1020,14 @@ class PayPay:
             payload["theme"] = "pochibukuro"
 
         send = await self.session.post(
-            f"https://app4.paypay.ne.jp/bff/v2/executeP2PSendMoney",
+            "https://app4.paypay.ne.jp/bff/v2/executeP2PSendMoney",
             headers=self.headers,
             json=payload,
             params=self.params,
         )
         try:
             send = send.json()
-        except:
+        except Exception:
             raise PayPayNetWorkError("日本以外からは接続できません")
 
         if send["header"]["resultCode"] == "S0001":
@@ -1051,7 +1050,7 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        if not "sendbird_group_channel_" in chat_room_id:
+        if "sendbird_group_channel_" not in chat_room_id:
             chat_room_id = "sendbird_group_channel_" + chat_room_id
 
         self.headers = update_header_baggage(self.headers, sentry_public_key)
@@ -1219,7 +1218,7 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        if not "sendbird_group_channel_" in chat_room_id:
+        if "sendbird_group_channel_" not in chat_room_id:
             chat_room_id = "sendbird_group_channel_" + chat_room_id
 
         self.headers = update_header_baggage(
@@ -1425,8 +1424,10 @@ class PayPay:
                 "includeSkinInfoFlag": False,
                 "networkStatus": "WIFI",
             },
+            proxies=self.proxy,
         )
         await self.session.get(
             "https://app4.paypay.ne.jp/bff/v1/getSearchBar?payPayLang=ja",
             headers=self.headers,
+            proxies=self.proxy,
         )
