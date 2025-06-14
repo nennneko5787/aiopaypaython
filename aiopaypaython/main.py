@@ -127,6 +127,9 @@ class PayPayNetWorkError(Exception):
 
 class PayPay:
     def __init__(self, proxy: str = None):
+        if proxy is not None:
+            if not proxy.startswith("http"):
+                proxy = "http://" + proxy
         self.session = httpx.AsyncClient(timeout=None, proxy=proxy)
 
     async def initialize(
@@ -907,7 +910,6 @@ class PayPay:
                     "https://app4.paypay.ne.jp/bff/v2/getP2PLinkInfo",
                     headers=self.headers,
                     params=params,
-                    proxies=self.proxy,
                 )
             ).json()
 
@@ -1424,10 +1426,8 @@ class PayPay:
                 "includeSkinInfoFlag": False,
                 "networkStatus": "WIFI",
             },
-            proxies=self.proxy,
         )
         await self.session.get(
             "https://app4.paypay.ne.jp/bff/v1/getSearchBar?payPayLang=ja",
             headers=self.headers,
-            proxies=self.proxy,
         )
