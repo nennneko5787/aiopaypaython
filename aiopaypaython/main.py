@@ -7,26 +7,6 @@ import httpx
 from . import pkce
 
 
-def generate_sentry():
-    trace_id = uuid4().hex
-    span_id = uuid4().hex[16:]
-
-    class SENTRY_TRACE_SPAN(NamedTuple):
-        trace_id: str
-        span_id: str
-        sentry_trace: str
-        sentry_trace_0: str
-        sentry_trace_1: str
-
-    return SENTRY_TRACE_SPAN(
-        trace_id,
-        span_id,
-        f"{trace_id}-{span_id}",
-        f"{trace_id}-{span_id}-0",
-        f"{trace_id}-{span_id}-1",
-    )
-
-
 def generate_vector(r1, r2, r3, precision=8):
     v1 = f"{random.uniform(*r1):.{precision}f}"
     v2 = f"{random.uniform(*r2):.{precision}f}"
@@ -310,8 +290,6 @@ class PayPay:
                 headers = self.headers
                 del headers["Device-Lock-Type"]
                 del headers["Device-Lock-App-Setting"]
-                del headers["baggage"]
-                del headers["sentry-trace"]
 
                 confirm_data = {
                     "clientId": "pay2-mobile-app-client",
@@ -459,8 +437,6 @@ class PayPay:
         headers = self.headers
         del headers["Device-Lock-Type"]
         del headers["Device-Lock-App-Setting"]
-        del headers["baggage"]
-        del headers["sentry-trace"]
 
         confirm_data = {
             "clientId": "pay2-mobile-app-client",
