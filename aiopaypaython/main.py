@@ -206,12 +206,10 @@ class PayPay:
                 params=params,
             )
 
-            sentry_ids = generate_sentry()
             headers = {
                 "Accept": "application/json, text/plain, */*",
                 "Accept-Encoding": "gzip, deflate, br, zstd",
                 "Accept-Language": "ja-JP,ja;q=0.9",
-                "baggage": f"sentry-environment=Production,sentry-release=4.75.0,sentry-public_key=a5e3ae80a20e15b8de50274dd231ab83,sentry-trace_id={sentry_ids.trace_id},sentry-sample_rate=0.0005,sentry-transaction=SignIn,sentry-sampled=false",
                 "Cache-Control": "no-cache",
                 "Client-Id": "pay2-mobile-app-client",
                 "Client-Type": "PAYPAYAPP",
@@ -225,7 +223,6 @@ class PayPay:
                 "Sec-Fetch-Dest": "empty",
                 "Sec-Fetch-Mode": "cors",
                 "Sec-Fetch-Site": "same-origin",
-                "sentry-trace": sentry_ids.sentry_trace_0,
                 "User-Agent": f"Mozilla/5.0 (Linux; Android 10; SCV38 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/132.0.6834.163 Mobile Safari/537.36 jp.pay2.app.android/{self.version}",
                 "X-Requested-With": "jp.ne.paypay.android.app",
             }
@@ -238,12 +235,10 @@ class PayPay:
             if par_check["header"]["resultCode"] != "S0000":
                 raise PayPayLoginError(par_check)
 
-            sentry_ids = generate_sentry()
             headers = {
                 "Accept": "application/json, text/plain, */*",
                 "Accept-Encoding": "gzip, deflate, br, zstd",
                 "Accept-Language": "ja-JP,ja;q=0.9",
-                "baggage": f"sentry-environment=Production,sentry-release=4.75.0,sentry-public_key=a5e3ae80a20e15b8de50274dd231ab83,sentry-trace_id={sentry_ids.trace_id}",
                 "Cache-Control": "no-cache",
                 "Client-Id": "pay2-mobile-app-client",
                 "Client-OS-Type": "ANDROID",
@@ -262,7 +257,6 @@ class PayPay:
                 "Sec-Fetch-Dest": "empty",
                 "Sec-Fetch-Mode": "cors",
                 "Sec-Fetch-Site": "same-origin",
-                "sentry-trace": sentry_ids.sentry_trace,
                 "User-Agent": f"Mozilla/5.0 (Linux; Android 10; SCV38 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/132.0.6834.163 Mobile Safari/537.36 jp.pay2.app.android/{self.version}",
                 "X-Requested-With": "jp.ne.paypay.android.app",
             }
@@ -369,12 +363,10 @@ class PayPay:
         if "https://" in url:
             url = url.replace("https://www.paypay.ne.jp/portal/oauth2/l?id=", "")
 
-        sentry_ids = generate_sentry()
         headers = {
             "Accept": "application/json, text/plain, */*",
             "Accept-Encoding": "gzip, deflate, br, zstd",
             "Accept-Language": "ja-JP,ja;q=0.9",
-            "baggage": f"sentry-environment=Production,sentry-release=4.75.0,sentry-public_key=a5e3ae80a20e15b8de50274dd231ab83,sentry-trace_id={sentry_ids.trace_id},sentry-sample_rate=0.0005,sentry-transaction=OTL,sentry-sampled=false",
             "Cache-Control": "no-cache",
             "Client-Id": "pay2-mobile-app-client",
             "Client-OS-Type": "ANDROID",
@@ -393,7 +385,6 @@ class PayPay:
             "Sec-Fetch-Dest": "empty",
             "Sec-Fetch-Mode": "cors",
             "Sec-Fetch-Site": "same-origin",
-            "sentry-trace": sentry_ids.sentry_trace_0,
             "User-Agent": f"Mozilla/5.0 (Linux; Android 10; SCV38 Build/QP1A.190711.020; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/132.0.6834.163 Mobile Safari/537.36 jp.pay2.app.android/{self.version}",
             "X-Requested-With": "jp.ne.paypay.android.app",
         }
