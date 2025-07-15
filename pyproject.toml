@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aiopaypaython"
-version = "2.0.0"
+version = "2.0.1"
 authors = [
     { name="nennneko5787", email="h4369@nennneko5787.net" },
 ]

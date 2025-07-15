@@ -72,46 +72,6 @@ def update_header_device_state(headers: dict):
     return headers
 
 
-sentry_public_key = "e5f3c063d55d3058bc5bfb0f311152e4"
-
-
-def update_header_baggage(
-    header: dict,
-    public_key: str,
-    sample_rate: str = None,
-    sampled: bool = None,
-    transaction: str = None,
-    sentry_trace_style: int = None,
-):
-    baggage = (
-        "sentey-environment=Production,"
-        + f"sentry-public_key={public_key},sentry-release=consumer-android%404.78.1%2B47801"
-    )
-    if sample_rate:
-        baggage = baggage + f",sentry-sample_rate={sample_rate}"
-
-    if sampled is not None:
-        if sampled:
-            baggage = baggage + ",sentry-sampled=true"
-        else:
-            baggage = baggage + ",sentry-sampled=false"
-
-    sentry_ids = generate_sentry()
-    baggage = baggage + f",sentry-trace_id={sentry_ids.trace_id}"
-
-    if transaction:
-        baggage = baggage + f",sentry-transaction={transaction}"
-
-    if sentry_trace_style == 0:
-        header["sentry-trace"] = sentry_ids.sentry_trace_0
-    elif sentry_trace_style == 1:
-        header["sentry-trace"] = sentry_ids.sentry_trace_1
-    else:
-        header["sentry-trace"] = sentry_ids.sentry_trace
-
-    header["baggage"] = baggage
-    return header
-
 
 class PayPayError(Exception):
     pass
@@ -201,9 +161,6 @@ class PayPay:
             self.access_token = None
             self.refresh_token = None
             self.code_verifier, self.code_challenge = pkce.generate_pkce_pair(43)
-            self.headers = update_header_baggage(
-                self.headers, sentry_public_key, "0", False, "OAuth2Fragment", 0
-            )
 
             payload = {
                 "clientId": "pay2-mobile-app-client",
@@ -534,9 +491,6 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        self.headers = update_header_baggage(
-            self.headers, sentry_public_key, "0", False, "OAuth2Fragment", 0
-        )
         refdata = {
             "clientId": "pay2-mobile-app-client",
             "refreshToken": refresh_token,
@@ -572,15 +526,6 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        self.headers = update_header_baggage(
-            self.headers,
-            sentry_public_key,
-            "0.0099999997764826",
-            False,
-            "TransactionHistoryV2Fragment",
-            0,
-        )
-
         params = {
             "pageSize": str(size),
             "orderTypes": "",
@@ -611,10 +556,6 @@ class PayPay:
     async def get_balance(self):
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
-
-        self.headers = update_header_baggage(
-            self.headers, sentry_public_key, "0", False, "WalletAssetDetailsFragment"
-        )
 
         params = {
             "includePendingBonusLite": "false",
@@ -690,14 +631,6 @@ class PayPay:
             if not self.access_token:
                 raise PayPayLoginError("まずはログインしてください")
 
-            self.headers = update_header_baggage(
-                self.headers,
-                sentry_public_key,
-                "0.0099999997764826",
-                False,
-                "P2PMoneyTransferDetailFragment",
-                0,
-            )
             params = {"verificationCode": url, "payPayLang": "ja"}
             link_info = (
                 await self.session.get(
@@ -765,14 +698,6 @@ class PayPay:
             url = url.replace("https://pay.paypay.ne.jp/", "")
 
         if not link_info:
-            self.headers = update_header_baggage(
-                self.headers,
-                sentry_public_key,
-                "0.0099999997764826",
-                False,
-                "P2PMoneyTransferDetailFragment",
-                0,
-            )
             params = {"verificationCode": url, "payPayLang": "ja"}
             link_info = (
                 await self.session.get(
@@ -782,7 +707,6 @@ class PayPay:
                 )
             ).json()
 
-        self.headers = update_header_baggage(self.headers, sentry_public_key)
         payload = {
             "requestId": str(uuid4()),
             "orderId": link_info["payload"]["pendingP2PInfo"]["orderId"],
@@ -813,7 +737,7 @@ class PayPay:
             "https://app4.paypay.ne.jp/bff/v2/acceptP2PSendMoneyLink",
             headers=self.headers,
             json=payload,
-            params=self.params,
+            params={"payPayLang":"ja","appContext":"P2PMoneyTransferDetailScreen_linkReceiver"},
         )
         try:
             receive = receive.json()
@@ -836,14 +760,6 @@ class PayPay:
             url = url.replace("https://pay.paypay.ne.jp/", "")
 
         if not link_info:
-            self.headers = update_header_baggage(
-                self.headers,
-                sentry_public_key,
-                "0.0099999997764826",
-                False,
-                "P2PMoneyTransferDetailFragment",
-                0,
-            )
             params = {"verificationCode": url, "payPayLang": "ja"}
             link_info = (
                 await self.session.get(
@@ -853,7 +769,6 @@ class PayPay:
                 )
             ).json()
 
-        self.headers = update_header_baggage(self.headers, sentry_public_key)
         payload = {
             "requestId": str(uuid4()),
             "orderId": link_info["payload"]["pendingP2PInfo"]["orderId"],
@@ -896,14 +811,6 @@ class PayPay:
         if "https://" in url:
             url = url.replace("https://pay.paypay.ne.jp/", "")
         if not link_info:
-            self.headers = update_header_baggage(
-                self.headers,
-                sentry_public_key,
-                "0.0099999997764826",
-                False,
-                "P2PMoneyTransferDetailFragment",
-                0,
-            )
             params = {"verificationCode": url, "payPayLang": "ja"}
             link_info = (
                 await self.session.get(
@@ -913,7 +820,6 @@ class PayPay:
                 )
             ).json()
 
-        self.headers = update_header_baggage(self.headers, sentry_public_key)
         payload = {
             "orderId": link_info["payload"]["pendingP2PInfo"]["orderId"],
             "requestId": str(uuid4()),
@@ -957,7 +863,6 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        self.headers = update_header_baggage(self.headers, sentry_public_key)
         payload = {
             "requestId": str(uuid4()),
             "amount": amount,
@@ -1008,7 +913,6 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        self.headers = update_header_baggage(self.headers, sentry_public_key)
         payload = {
             "amount": amount,
             "theme": theme,
@@ -1055,7 +959,6 @@ class PayPay:
         if "sendbird_group_channel_" not in chat_room_id:
             chat_room_id = "sendbird_group_channel_" + chat_room_id
 
-        self.headers = update_header_baggage(self.headers, sentry_public_key)
         payload = {
             "channelUrl": chat_room_id,
             "message": message,
@@ -1082,7 +985,6 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        self.headers = update_header_baggage(self.headers, sentry_public_key)
         payload = {"amount": None, "sessionId": None}
         if amount:
             payload["amount"] = amount
@@ -1115,9 +1017,6 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        self.headers = update_header_baggage(
-            self.headers, sentry_public_key, "0", False, "ProfileFragment", 0
-        )
         profile = (
             await self.session.get(
                 "https://app4.paypay.ne.jp/bff/v2/getProfileDisplayInfo",
@@ -1152,8 +1051,6 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        self.headers = update_header_baggage(self.headers, sentry_public_key)
-
         if paypay_money:
             setting = {"moneyPriority": "MONEY_FIRST"}
         else:
@@ -1180,14 +1077,6 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        self.headers = update_header_baggage(
-            self.headers,
-            sentry_public_key,
-            "0.0099999997764826",
-            False,
-            "P2PChatRoomListFragment",
-            0,
-        )
         params = {
             "pageSize": str(size),
             "customTypes": "P2P_CHAT,P2P_CHAT_INACTIVE,P2P_PUBLIC_GROUP_CHAT,P2P_LINK,P2P_OLD",
@@ -1223,14 +1112,6 @@ class PayPay:
         if "sendbird_group_channel_" not in chat_room_id:
             chat_room_id = "sendbird_group_channel_" + chat_room_id
 
-        self.headers = update_header_baggage(
-            self.headers,
-            sentry_public_key,
-            "0.0099999997764826",
-            False,
-            "P2PChatRoomFragment",
-            0,
-        )
         params = {
             "chatRoomId": chat_room_id,
             "include": include,
@@ -1261,7 +1142,6 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        self.headers = update_header_baggage(self.headers, sentry_public_key)
         params = {
             "pageSize": "20",
             "orderTypes": "CASHBACK",
@@ -1293,7 +1173,6 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        self.headers = update_header_baggage(self.headers, sentry_public_key)
         payload = {
             "searchTerm": user_id,
             "pageToken": "",
@@ -1354,14 +1233,6 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        self.headers = update_header_baggage(
-            self.headers,
-            sentry_public_key,
-            "0.0099999997764826",
-            False,
-            "P2PChatRoomFragment",
-            0,
-        )
         payload = {
             "returnChatRoom": True,
             "shouldCheckMessageForFriendshipAppeal": True,
@@ -1397,14 +1268,6 @@ class PayPay:
         if not self.access_token:
             raise PayPayLoginError("まずはログインしてください")
 
-        self.headers = update_header_baggage(
-            self.headers,
-            sentry_public_key,
-            "0.0099999997764826",
-            False,
-            "MainActivity",
-            0,
-        )
         alive = (
             await self.session.get(
                 "https://app4.paypay.ne.jp/bff/v1/getGlobalServiceStatus?payPayLang=en",
